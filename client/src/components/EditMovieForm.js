@@ -6,6 +6,10 @@ import axios from 'axios';
 
 const EditMovieForm = (props) => {
 	const { push } = useHistory();
+	const { id } = useParams();
+	const { add } = props || false;
+	const { update } = props;
+	let header = "Editing"
 
 	const [movie, setMovie] = useState({
 		title:"",
@@ -14,7 +18,26 @@ const EditMovieForm = (props) => {
 		metascore: 0,
 		description: ""
 	});
-	
+	if(add){
+		header = "Add Movie"
+	}
+	else {
+		header = "Editing"
+	}
+
+	useEffect(()=>{
+        if(!add)
+		{
+			axios.get(`http://localhost:5000/api/movies/${id}`)
+            .then(res=>{
+                setMovie(res.data);
+            })
+            .catch(err=>{
+                console.log(err);
+            })
+		}
+    }, []);
+
 	const handleChange = (e) => {
         setMovie({
             ...movie,
@@ -24,6 +47,16 @@ const EditMovieForm = (props) => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
+		if(add){
+			axios.post(`http://localhost:5000/api/movies/`, movie);
+			update();
+			push(`/movies`);
+		}
+		else{
+			axios.put(`http://localhost:5000/api/movies/${id}`, movie);
+			update();
+			push(`/movies/${id}`);
+		}
 	}
 	
 	const { title, director, genre, metascore, description } = movie;
@@ -33,7 +66,7 @@ const EditMovieForm = (props) => {
 		<div className="modal-content">
 			<form onSubmit={handleSubmit}>
 				<div className="modal-header">						
-					<h4 className="modal-title">Editing <strong>{movie.title}</strong></h4>
+					<h4 className="modal-title"> {header} <strong>{movie.title}</strong></h4>
 				</div>
 				<div className="modal-body">					
 					<div className="form-group">
